@@ -11,7 +11,7 @@ function ZigZag(N::Normal, ξ0::Float64, T::Float64)
     Ξ = [ξ0]
     Γ = [t]
     while (t<T)
-        τ = sqrt.(-2*N.σ*log(rand()) + max(0, θ*(ξ - N.μ))^2) - θ*(ξ-N.μ)
+        τ = sqrt.(-2*N.σ*log(rand()) + max(0, θ*(ξ - N.μ))^2) - θ*(ξ - N.μ)
         t = t + τ
         ξ = ξ + θ*τ
         push!(Ξ, ξ)
@@ -22,11 +22,11 @@ function ZigZag(N::Normal, ξ0::Float64, T::Float64)
 end
 function ZigZag(N::MultiNormal, ξ0 , T)
     d = length(N.μ)
-    t = 0.0 ; θ = ones(d); ξ = zeros(d)
+    t = 0.0 ; θ = ones(d); ξ = ξ0
     Ξ = [ξ]
     Γ = [t]
     while t<T
-        τ = sqrt.(-2*N.Σ*log.(rand(d)) + max.(0 ,θ.*(ξ - N.μ)).^2) - θ.*(ξ-N.μ)
+        τ = sqrt.(-2*N.Σ*log.(rand(d)) + max.(0 ,θ.*(ξ - N.μ)).^2) - θ.*(ξ - N.μ)
         τ, i0 = findmin(τ)
         t = t + τ
         ξ = ξ + θ.*τ
@@ -36,9 +36,9 @@ function ZigZag(N::MultiNormal, ξ0 , T)
     end
     return(Γ, Ξ)
 end
-N= MultiNormal([1.0, 1.0],[1.0 0.0; 0.0 1.0])
-a = ZigZag(N,1.0,100.0)
+N = MultiNormal([1.0, 1.0], [1.0 0.0; 0.0 1.0])
+a = ZigZag(N, 1.0, 100.0)
 # I have to figure out how to plot the coordinate
-N= Normal(10.0,1.0)
-b = ZigZag(N,1.0,100.0)
-plot(b[1],b[2])
+N = Normal(10.0, 1.0)
+b = ZigZag(N, 1.0, 100.0)
+plot(b[1], b[2])
