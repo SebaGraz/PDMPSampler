@@ -22,7 +22,7 @@ module ZigZag
         end
         return(Γ,Ξ)
     end
-    function ZigZagGaussian(N::MultiNormal, ξ0 , T)
+    function ZigZagGaussian(N::MultiNormal, ξ0::Array{Float64, 1} , T::Float64)
         d = length(N.μ)
         t = 0.0 ; θ = ones(d); ξ = ξ0
         Ξ = [ξ]
