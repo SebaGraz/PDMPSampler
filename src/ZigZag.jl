@@ -8,6 +8,10 @@ module ZigZag
         μ::Float64
         σ::Float64
     end
+    struct Skeleton
+        t::Float64
+        ξ::Array{Float64, 1}
+    end
     function ZigZagGaussian(N::Normal, ξ0::Float64, T::Float64)
         t = 0.0 ; θ = 1; ξ = ξ0
         Ξ = [ξ0]
@@ -23,49 +27,56 @@ module ZigZag
         return(Γ,Ξ)
     end
     function ZigZagGaussian(N::MultiNormal, ξ0::Array{Float64, 1} , T::Float64)
-        d = length(N.μ)
-        t = 0.0 ; θ = ones(d); ξ = ξ0
-        Ξ = [ξ]
-        Γ = [t]
+        d = length(N.μ) ; t = 0.0 ; θ = ones(d);
+        ξ = ξ0
+        Ξ = [Skeleton(t,ξ)]
         τ = zeros(d)
         V = inv(N.Σ)
         while t<T
             b = θ.*(V*θ)
             a = θ.*(V*ξ)
-            println(a)
             for i in 1:2
-                if b[i] > 0
-                    if a[i] < 0
-                        τ[i] = sqrt(-log(rand())*2.0/b[i]) - a[i]/b[i]
-                    else #a[i]>0
-                        τ[i] = sqrt((a[i]/b[i])^2 - log(rand())*2.0/b[i]) - a[i]/b[i]
-                    end
-                elseif  b[i] == 0
-                    if a[i] > 0
-                        τ[i] = -log(rand())/a[i]
-                    else #a[i] <= 0
-                        τ[i] = Inf
-                    end
-                else #b[i] < 0
-                    if a[i] <= 0
-                        τ[i] = Inf
-                    else
-                        u = rand()
-                        if -log(u) <= -a[i]^2/b[i] + a[i]^2/(2*b[i])
-                            τ[i] = - sqrt((a[i]/b[i])^2 - log(u)*2.0/b[i]) - a[i]/b[i]
-                        else
-                            τ[i] = Inf
-                        end
-                    end
-                end
+                τ = GetTime.(a,b,rand(2))
             end
             τ1, i0 = findmin(τ)
             t = t + τ1
             ξ = ξ + θ*τ1
-            push!(Ξ, ξ)
-            push!(Γ, t)
+            push!(Ξ, Skeleton(t, ξ))
             θ[i0] = -θ[i0]
         end
-        return(Γ, Ξ)
+        return(Ξ)
+    end
+    function GetTime(a,b,u)
+        if b > 0
+            if a < 0
+                τ = sqrt(-log(u)*2.0/b) - a/b
+            else #a[i]>0
+                τ = sqrt((a/b)^2 - log(u)*2.0/b) - a/b
+            end
+        elseif  b == 0
+            if a > 0
+                τ = -log(u)/a
+            else #a[i] <= 0
+                τ = Inf
+            end
+        else #b[i] < 0
+            if a <= 0
+                τ = Inf
+            else
+                if -log(u) <= -a^2/b + a^2/(2*b)
+                    τ = - sqrt((a/b)^2 - log(u)*2.0/b) - a/b
+                else
+                    τ = Inf
+                end
+            end
+        end
+    end
+    function Plots.plot(Ξ::Array{Skeleton,1},dims::Vector)
+        d = length(Ξ)
+        x = zeros(d)
+        y = zeros(d)
+        [x[i] = Ξ[i].ξ[dims[1]] for i in 1:d]
+        [y[i] = Ξ[i].ξ[dims[2]] for i in 1:d]
+        plot(x,y)
     end
 end  # module ZigZag
