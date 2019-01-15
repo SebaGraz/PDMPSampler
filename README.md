@@ -1,6 +1,6 @@
 # PDMCSampler
 
-This repository deals with 3 different non-reversible continuous Markov Chain Monte Carlos based on piecewise deterministic Markov processes (see *Davis, Markov Models and Optimization*). The source folder contains:
+This repository deals with 3 different non-reversible continuous Markov Chain Monte Carlo algorothms based on piecewise deterministic Markov processes (see *Davis, Markov Models and Optimization*). The source folder contains:
 * a subfolder *Models* containing the target distributions we want to sample from (currently only Gaussian)
 * *PDSamplers.jl* contains the implementation of the ZigZag Sampler, Bouncy Particle Sampler and Coordinate Sampler.
 * *Kernels.jl* implements the change of the velocity coordinates when the inhomogeneous Poisson event occours.
